@@ -1,0 +1,260 @@
+---
+title: "Tempreport"
+author: "Nick Parker"
+date: "5/7/2022"
+output: html_document
+params:
+  nms: NA
+  age: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(haven)
+library(psych)
+library(texreg)
+library(dplyr)
+
+params$nms
+
+data_country <- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country==params$nms)
+    } else { 
+      data_clean
+      }
+
+
+```
+
+## R Markdown
+
+
+```{r, echo=FALSE}
+
+mother<- if(params$nms!="Aggregate") {
+        data_clean %>%
+        filter(country ==params$nms) %>%
+        filter(suffering_mother >0) %>%
+        select(suffering_mother, country)
+    } else {
+      data_clean %>%
+      filter(suffering_mother>0) %>%
+      select(suffering_mother, country)
+
+  }
+
+  jobs<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country ==params$nms) %>%
+      filter(jobs_scarce>0) %>%
+      select(jobs_scarce, country)
+    } else {
+      data_clean %>%
+        filter(jobs_scarce>0) %>%
+        select(jobs_scarce, country)
+
+    }
+
+  age_mother<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country ==params$nms) %>%
+      select(age,suffering_mother)%>%
+      group_by(age) %>%
+      summarise(mean_age_suffering = mean(suffering_mother)) %>%
+      filter(age>0) %>%
+      pivot_longer(
+        cols = "mean_age_suffering",
+        values_to = "values")
+    } else {
+      data_clean %>%
+        select(age,suffering_mother)%>%
+        group_by(age) %>%
+        summarise(mean_age_suffering = mean(suffering_mother)) %>%
+        filter(age>0) %>%
+        pivot_longer(
+          cols = "mean_age_suffering",
+          values_to = "values")
+  }
+
+  age_jobs<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country ==params$nms) %>%
+      select(age,jobs_scarce)%>%
+      group_by(age) %>%
+      summarise(mean_age_jobs = mean(jobs_scarce)) %>%
+      filter(age>0) %>%
+      pivot_longer(
+        cols = "mean_age_jobs",
+        values_to = "values")
+    } else {
+      data_clean %>%
+        select(age,jobs_scarce)%>%
+        group_by(age) %>%
+        summarise(mean_age_jobs = mean(jobs_scarce)) %>%
+        filter(age>0) %>%
+        pivot_longer(
+          cols = "mean_age_jobs",
+          values_to = "values")
+  }
+
+  sex_mother<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country==params$nms) %>%
+      group_by(sex) %>%
+      summarise(mean_sex_suffering = mean(suffering_mother))%>%
+      mutate(sex=as.character(sex))%>%
+      mutate(sex=replace(sex, sex=="2","Female")) %>%
+      mutate(sex=replace(sex, sex=="1","Male"))
+    } else {
+      data_clean %>%
+        group_by(sex) %>%
+        summarise(mean_sex_suffering = mean(suffering_mother))%>%
+        mutate(sex=as.character(sex))%>%
+        mutate(sex=replace(sex, sex=="2","Female")) %>%
+        mutate(sex=replace(sex, sex=="1","Male"))
+  }
+
+  sex_jobs<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country==params$nms) %>%
+      group_by(sex) %>%
+      summarise(mean_sex_jobs = mean(jobs_scarce)) %>%
+      mutate(sex=as.character(sex))%>%
+      mutate(sex=replace(sex, sex=="2","Female")) %>%
+      mutate(sex=replace(sex, sex=="1","Male"))
+    } else {
+      data_clean %>%
+        group_by(sex) %>%
+        summarise(mean_sex_jobs = mean(jobs_scarce)) %>%
+        mutate(sex=as.character(sex))%>%
+        mutate(sex=replace(sex, sex=="2","Female")) %>%
+        mutate(sex=replace(sex, sex=="1","Male"))
+  }
+
+  education_mother<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country==params$nms) %>%
+      filter(education>0 & education!=66) %>%
+      group_by(education) %>%
+      summarise(mean_education_suffering = mean(suffering_mother)) %>%
+      mutate(education=as.character(education)) %>%
+      mutate(education=replace(education, education=="2","Secondary")) %>%
+      mutate(education=replace(education, education=="1","Primary")) %>%
+      mutate(education=replace(education, education=="3","College"))
+    } else {
+      data_clean %>%
+        filter(education>0 & education!=66) %>%
+        group_by(education) %>%
+        summarise(mean_education_suffering = mean(suffering_mother)) %>%
+        mutate(education=as.character(education)) %>%
+        mutate(education=replace(education, education=="2","Secondary")) %>%
+        mutate(education=replace(education, education=="1","Primary")) %>%
+        mutate(education=replace(education, education=="3","College"))
+  }
+
+  education_jobs<- if(params$nms!="Aggregate") {
+      data_clean %>%
+      filter(country==params$nms) %>%
+      filter(education>0 & education!=66) %>%
+      group_by(education) %>%
+      summarise(mean_education_jobs = mean(jobs_scarce)) %>%
+      mutate(education=as.character(education))%>%
+      mutate(education=replace(education, education=="2","Secondary")) %>%
+      mutate(education=replace(education, education=="1","Primary")) %>%
+      mutate(education=replace(education, education=="3","College"))
+    } else {
+      data_clean %>%
+        filter(education>0 & education!=66) %>%
+        group_by(education) %>%
+        summarise(mean_education_jobs = mean(jobs_scarce)) %>%
+        mutate(education=as.character(education))%>%
+        mutate(education=replace(education, education=="2","Secondary")) %>%
+        mutate(education=replace(education, education=="1","Primary")) %>%
+        mutate(education=replace(education, education=="3","College"))
+  }
+
+suffering.mother.lm<- lm(suffering_mother ~ poly(age,params$age), data = data_country())
+
+jobs.scarce.lm<- lm(jobs_scarce ~ poly(age,params$age), data = data_country())
+
+
+```
+
+
+
+```{r plots, echo=FALSE}
+
+ggplot(mother, aes(x="suffering_mother"))+
+      theme_minimal()+
+      geom_bar(aes(x = suffering_mother)) +
+      xlab("count") +
+      ggtitle("Response Counts: Children Suffer When Mother Works")
+  
+  
+ggplot(jobs, aes(x="jobs_scarce"))+
+      theme_minimal()+
+      geom_bar(aes(x = jobs_scarce)) +
+      xlab("count") +
+      ggtitle("Response Counts: Jobs should be given to Nationals")
+ 
+ggplot(age_mother, aes(age,values))+
+      theme_minimal()+
+      geom_point() +
+      xlab("age") +
+      ylab("mean response value")+
+      ggtitle("Age and mean response to 'mother working' question")+
+      geom_smooth(method=lm) 
+  
+ggplot(age_jobs, aes(age,values))+
+      theme_minimal()+
+      geom_point() +
+      xlab("age") +
+      ylab("mean response value")+
+      ggtitle("Age and mean response to 'jobs scarce' question")+
+      geom_smooth(method=lm) 
+
+ggplot(data = sex_jobs, aes(y=sex, x=mean_sex_jobs))+
+      theme_minimal()+
+      geom_bar(stat="identity") +
+      xlab("mean response") +
+      ylab("sex")+
+      ggtitle("Sex and mean response to jobs question")
+    
+ggplot(sex_mother, aes(y=sex, x=mean_sex_suffering))+
+      theme_minimal()+
+      geom_bar(stat = "identity") +
+      xlab("mean response") +
+      ylab("sex")+
+      ggtitle("Sex and mean response to 'mother working' question")
+    
+ggplot(education_mother, aes(y=education, x=mean_education_suffering))+
+      theme_minimal()+
+      geom_bar(stat = "identity") +
+      xlab("mean response") +
+      ylab("educational attainment")+
+      ggtitle("Educational attainment and response to 'children suffering' question")
+    
+ ggplot(education_jobs, aes(y=education, x=mean_education_jobs))+
+      theme_minimal()+
+      geom_bar(stat = "identity") +
+      xlab("mean response") +
+      ylab("educational attainment")+
+      ggtitle("Educational attainment and response to 'children suffering' question")
+    
+ reg_table <- htmlreg(list(suffering.mother.lm, jobs.scarce.lm), 
+    dcolumn = TRUE, 
+    booktabs = TRUE,
+    use.packages = TRUE, 
+    label = "tab:1", 
+    caption = "Regression Estimation Results", float.pos = "hb",
+    custom.model.names = c("Working Mother", "Job Scarcity"))
+
+reg_table
+    
+  
+```
+
+
