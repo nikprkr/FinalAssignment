@@ -15,7 +15,7 @@ opinions of citizens all over Europe."
 
 ### Stucture of Folders
 
-All code can be found in the "scripts" folders. All country-specific reports can be found in the "reports" folder inside the output folder. 
+All code can be found in the "scripts" folders. 
 
 ### Session Info
 
