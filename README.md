@@ -2,7 +2,7 @@
 
 ### Project Description
 
-This project explores how sex, religious affiliation, and income influence the degree to which respondents agree with the following statements:
+This project explores how age, education, and sex influence the degree to which respondents agree with the following statements:
 
 - When a mother works for pay, the children suffer
 - When jobs are scarce, employers should give priority to [NATIONALITY] people over immigrants
