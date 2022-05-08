@@ -2,10 +2,12 @@
 
 ### Project Description
 
-This project explores how age, education, and sex influence the degree to which respondents agree with the following statements:
+This Shiny app allows users to view a given country's mean response (overall level of agreement with) the following statements: 
 
 - When a mother works for pay, the children suffer
 - When jobs are scarce, employers should give priority to [NATIONALITY] people over immigrants
+
+The app also allows users to explore how age, education, and sex influence the degree to which respondents agree with the following statements.
 
 The data used in this analysis was generated as part of the 2017 European Value Study (EVS). 
 The EVS is described as "a large-scale, cross-national and longitudinal survey research program on how 
@@ -15,7 +17,7 @@ opinions of citizens all over Europe."
 
 ### Stucture of Folders
 
-All code can be found in the "scripts" folders. 
+Data cleaning code can be found in the the "scripts" folders. The code for creating the Shiny app can be found in the EVS_app folder. 
 
 ### Session Info
 
